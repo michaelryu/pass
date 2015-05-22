@@ -1,16 +1,32 @@
 class User < ActiveRecord::Base
-  # Include default devise modules. Others available are:
-  # :confirmable, :lockable, :timeoutable and :omniauthable
-  attr_accessor :phone
+  attr_accessor :remember_token
   validates :phone, presence: true, uniqueness: true
-  validates :email, presence: false, email: false
-  devise :database_authenticatable, :registerable,
-    :recoverable, :rememberable, :trackable, :validatable, authentication_keys: [:phone]
-  def email_required?
-    false
+  validates_format_of :phone, with: /\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/, on: :update
+  has_secure_password
+  validates :password, presence: true
+
+  def User.digest(string)
+    cost = ActiveModel::SecurePassword.min_cost ? BCrypt::Engine::MIN_COST :
+      BCrypt::Engine.cost
+    BCrypt::Password.create(string, cost: cost)
   end
 
-  def email_changed?
-    false
+  def User.new_token
+    SecureRandom.urlsafe_base64
   end
+
+  def remember
+    self.remember_token = User.new_token
+    update_attribute(:remember_digest, User.digest(remember_token))
+  end
+
+  def authenticated?(remember_token)
+    return false if remember_digest.nil?
+    BCrypt::Password.new(remember_digest).is_password?(remember_token)
+  end
+
+  def forget
+    update_attribute(:remember_digest, nil)
+  end
+  
 end
