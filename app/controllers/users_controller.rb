@@ -1,6 +1,7 @@
 class UsersController < ApplicationController
   before_action :logged_in_user, only: [:edit, :update, :destroy]
   before_action :correct_user,   only: [:edit, :update]
+  skip_before_action :verify_authenticity_token, only: :send
 
   def new
     @user = User.new
@@ -35,6 +36,12 @@ class UsersController < ApplicationController
     else
       render 'edit'
     end
+  end
+
+  def texty
+    @random = rand.to_s[2..5]
+    client = Twilio::REST::Client.new Rails.application.secrets.twilio_account_sid, Rails.application.secrets.twilio_auth_token
+    message = client.messages.create from: '+1 (604) 337-1201', to: '+82 10 5517 5456', body: "Password: #{@random}"
   end
 
   def destroy

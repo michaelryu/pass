@@ -4,5 +4,6 @@ Rails.application.routes.draw do
   post   'login'   => 'sessions#create'
   delete 'logout'  => 'sessions#destroy'
   get 	 'signup'  => 'users#new'
+  get 'users/texty' => 'users#texty'
   resources :users
 end
